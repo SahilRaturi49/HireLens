@@ -1,7 +1,7 @@
 import mongoose, { Schema } from 'mongoose';
 import bcrypt from 'bcryptjs';
 import jwt from "jsonwebtoken";
-import { required, types } from 'joi';
+import Joi from 'joi';
 
 
 
