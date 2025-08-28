@@ -1,5 +1,7 @@
 import express from "express";
 import dotenv from "dotenv";
+import cookieParser from "cookie-parser";
+
 import { connect } from "./config/db.js";
 
 import userRoutes from "./routes/user.route.js";
@@ -8,6 +10,7 @@ dotenv.config();
 
 const app = express();
 app.use(express.json());
+app.use(cookieParser()); 
 
 await connect();
 

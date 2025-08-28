@@ -3,6 +3,8 @@ import { User } from "../models/user.model.js";
 import { ApiError } from "../utils/ApiError.js"
 
 export const protect = async (req, res, next) => {
+    console.log("Access Token from Cookie:", req.cookies.accessToken);
+    console.log("All cookies:", req.cookies);
     try {
         let token = req.cookies?.accessToken || req.headers.authorization?.split(" ")[1];
         if (!token) {

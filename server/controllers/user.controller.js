@@ -130,7 +130,7 @@ export const refreshAccessToken = asyncHandler(async (req, res) => {
         throw new ApiError(401, "Invalid or expired refresh token")
     };
 
-    const user = await User.findById(decodedToken._id);
+    const user = await User.findById(decodedToken._id).select("+refreshToken");
     if (!user || user.refreshToken !== incomingRefreshToken) {
         throw new ApiError(401, "Refresh token is expired or not valid");
     };
@@ -179,13 +179,21 @@ export const changeCurrentPassword = asyncHandler(async (req, res) => {
 export const updateAccountDetails = asyncHandler(async (req, res) => {
     const { name, email } = req.body;
 
-    if (!name || !email) {
-        throw new ApiError(400, "Name and email are required");
+    if (!name && !email) {
+        throw new ApiError(400, "Name or email are required");
     };
+
+    const updateData = {};
+    if (name) {
+        updateData.name = name
+    }
+    if (email) {
+        updateData.email = email
+    }
 
     const user = await User.findByIdAndUpdate(
         req.user._id,
-        { name, email },
+        updateData,
         { new: true, runValidators: true }
     );
 
@@ -194,6 +202,6 @@ export const updateAccountDetails = asyncHandler(async (req, res) => {
 })
 
 export const getCurrentUser = asyncHandler(async (req, res) => {
-  return res.status(200).json(new ApiResponse(200, req.user, "User fetched successfully"));
+    return res.status(200).json(new ApiResponse(200, req.user, "User fetched successfully"));
 });
 
