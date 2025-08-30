@@ -3,7 +3,7 @@ import slugify from "slugify";
 const jobSchema = new Schema(
   {
     recruiterId: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
@@ -72,7 +72,9 @@ jobSchema.pre("save", function (next) {
   if (!this.slug) {
     const titleSlug = slugify(this.title, { lower: true });
     const companySlug = slugify(this.companyName, { lower: true });
-    const locationSlug = slugify(this.location, { lower: true });
+    const locationSlug = this.location
+      ? slugify(this.location, { lower: true })
+      : "remote";
     this.slug = `${titleSlug}-at-${companySlug}-in-${locationSlug}-${this._id}`;
   }
   next();

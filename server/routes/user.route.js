@@ -10,14 +10,14 @@ import {
 } from "../controllers/user.controller.js";
 import { protect } from "../middlewares/auth.js";
 
-const router = express.Router();
-router.post("/register", registerUser);
-router.post("/login", loginUser);
-router.post("/refresh-token", refreshAccessToken);
+const userRoutes = express.Router();
+userRoutes.post("/register", registerUser);
+userRoutes.post("/login", loginUser);
+userRoutes.post("/update", refreshAccessToken);
 
-router.post("/logout", protect, logoutUser);
-router.get("/me", protect, getCurrentUser);
-router.patch("/change-password", protect, changeCurrentPassword);
-router.post("/update", protect, updateAccountDetails);
+userRoutes.post("/logout", protect, logoutUser);
+userRoutes.get("/me", protect, getCurrentUser);
+userRoutes.patch("/change-password", protect, changeCurrentPassword);
+userRoutes.post("/update", protect, updateAccountDetails);
 
-export default router;
+export default userRoutes;
