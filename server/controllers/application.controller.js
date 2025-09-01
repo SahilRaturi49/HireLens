@@ -52,15 +52,7 @@ export const applyToJob = asyncHandler(async (req, res) => {
     );
 });
 
-// Candidate views his/her own applications
 export const getMyApplications = asyncHandler(async (req, res) => {
-  // Steps:
-  // 1. Extract userId from req.user
-  // 2. Query applications collection filtering by userId
-  // 3. Populate job details for display
-  // 4. Paginate results if needed (page, limit from query)
-  // 5. Return list of applications with relevant metadata
-
   const candidateId = req.user._id;
   if (!candidateId) {
     return res.status(401).json(new ApiResponse(401, null, "Unauthorized"));
@@ -121,6 +113,55 @@ export const getApplicationsByJob = asyncHandler(async (req, res) => {
   // 5. Populate user (candidate) details for better display
   // 6. Paginate results if needed
   // 7. Return list of applications
+  const { jobId } = req.params;
+  console.log("JobId param:", req.params);
+
+  const recruiterId = req.user._id;
+  if (!jobId || !mongoose.Types.ObjectId.isValid(jobId)) {
+    throw new ApiError(400, "Invalid or missing job ID");
+  }
+
+  const job = await Job.findById(jobId).select("recruiterId");
+  if (!job) {
+    throw new ApiError(404, "Job not found");
+  }
+
+  if (job.recruiterId.toString() !== recruiterId.toString()) {
+    throw new ApiError(403, "Unauthorized to access applications of this job");
+  }
+
+  let page = parseInt(req.query.page) || 1;
+  let limit = parseInt(req.query.limit) || 10;
+  if (page < 1) page = 1;
+  if (limit < 1) limit = 10;
+  const skip = (page - 1) * limit;
+
+  const applications = await Application.find({ jobId })
+    .populate({
+      path: "candidateId",
+      select: "name email phone",
+    })
+    .sort({ appliedAt: 1 })
+    .skip(skip)
+    .limit(limit);
+
+  const totalApplications = await Application.countDocuments({ jobId });
+
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        results: applications,
+        total: totalApplications,
+        page,
+        limit,
+        totalPages: Math.ceil(totalApplications / limit),
+        hasNextPage: page * limit < totalApplications,
+        hasPreviousPage: page > 1,
+      },
+      "Applications fetched successfully"
+    )
+  );
 });
 
 // Recruiter updates the status of a candidate’s application
