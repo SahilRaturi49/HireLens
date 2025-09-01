@@ -50,3 +50,11 @@ export const profileValidationSchema = Joi.object({
   githubUrl: Joi.string().uri().optional().allow(null, ""),
   portfolioUrl: Joi.string().uri().optional().allow(null, ""),
 });
+
+export const experienceSchema = Joi.object({
+  company: Joi.string().required(),
+  role: Joi.string().required(),
+  startDate: Joi.date().required(),
+  endDate: Joi.date().optional(),
+  description: Joi.string().optional(),
+});

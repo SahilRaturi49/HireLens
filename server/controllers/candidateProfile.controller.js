@@ -3,7 +3,10 @@ import { CandidateProfile } from "../models/candidateProfile.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import mongoose from "mongoose";
-import { profileValidationSchema } from "../utils/validation.js";
+import {
+  profileValidationSchema,
+  experienceSchema,
+} from "../utils/validation.js";
 
 export const getCandidateProfile = asyncHandler(async (req, res) => {
   const candidateId = req.user._id;
@@ -69,12 +72,39 @@ export const createOrUpdateProfile = asyncHandler(async (req, res) => {
     );
 });
 
-// Add experience item to profile
 export const addExperience = asyncHandler(async (req, res) => {
-  // 1. Extract candidateId from req.user
-  // 2. Validate experience data from req.body (company, role, dates, description)
-  // 3. Find profile and push new experience item into experience array
-  // 4. Save and return updated profile
+  const candidateId = req.user._id;
+  if (!candidateId || !mongoose.Types.ObjectId.isValid(candidateId)) {
+    throw new ApiError(400, "Invalid or missing candidate ID");
+  }
+
+  const { error, value } = experienceSchema.validate(req.body, {
+    abortEarly: false,
+  });
+
+  if (error) {
+    const errorMessages = error.details.map((detail) => detail.message);
+    throw new ApiError(400, `Validation error: ${errorMessages.join("; ")}`);
+  }
+  let profile = await CandidateProfile.findOne({ candidateId });
+  if (!profile) {
+    profile = new CandidateProfile({ candidateId, experience: [value] });
+  } else {
+    profile.experience.push(value);
+  }
+  await profile.save();
+
+  return res
+    .status(profile.isNew ? 201 : 200)
+    .json(
+      new ApiResponse(
+        profile.isNew ? 201 : 200,
+        { profile },
+        profile.isNew
+          ? "Profile created successfully"
+          : "Profile updated successfully"
+      )
+    );
 });
 
 // Update an experience entry by experienceId
