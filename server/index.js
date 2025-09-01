@@ -7,6 +7,7 @@ import { connect } from "./config/db.js";
 import userRoutes from "./routes/user.route.js";
 import jobRoutes from "./routes/job.route.js";
 import applicationRoutes from "./routes/application.route.js";
+import candidateProfileRoutes from "./routes/candidateProfile.route.js";
 
 dotenv.config();
 
@@ -19,6 +20,7 @@ await connect();
 app.use("/api/v1/user", userRoutes);
 app.use("/api/v1/jobs", jobRoutes);
 app.use("/api/v1/application", applicationRoutes);
+app.use("/api/v1/candidate-profile", candidateProfileRoutes);
 
 app.get("/", (req, res) => {
   res.send("HireLens backend up and running");
