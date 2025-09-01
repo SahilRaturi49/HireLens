@@ -7,6 +7,7 @@ import {
   getApplicationsByJob,
   getMyApplications,
   updateApplicationStatus,
+  withdrawApplication,
 } from "../controllers/application.controller.js";
 
 const applicationRoutes = express.Router();
@@ -22,6 +23,11 @@ applicationRoutes.put(
   "/update-status/:applicationId",
   protect,
   updateApplicationStatus
+);
+applicationRoutes.put(
+  "/withdraw-application/:applicationId",
+  protect,
+  withdrawApplication
 );
 
 export default applicationRoutes;

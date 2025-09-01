@@ -202,12 +202,37 @@ export const updateApplicationStatus = asyncHandler(async (req, res) => {
     );
 });
 
-// Candidate withdraws an application
 export const withdrawApplication = asyncHandler(async (req, res) => {
-  // Steps:
-  // 1. Extract applicationId from req.params
-  // 2. Find application by id
-  // 3. Check if user owns the application (authorization)
-  // 4. Mark application as "withdrawn" or delete record as per business logic
-  // 5. Save/update and return confirmation response
+  const { applicationId } = req.params;
+  const candidateId = req.user._id;
+
+  if (!mongoose.Types.ObjectId.isValid(applicationId)) {
+    throw new ApiError(400, "Invalid Application ID format");
+  }
+
+  const application = await Application.findById(applicationId);
+  if (!application) {
+    throw new ApiError(404, "Application not found");
+  }
+
+  if (application.candidateId.toString() !== candidateId.toString()) {
+    throw new ApiError(
+      403,
+      "You are not authorized to withdraw this application"
+    );
+  }
+
+  application.status = "withdrawn";
+  application.updatedAt = new Date();
+
+  await application.save();
+  res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        { application },
+        "Application withdrawn successfully"
+      )
+    );
 });
