@@ -103,16 +103,7 @@ export const getMyApplications = asyncHandler(async (req, res) => {
   );
 });
 
-// Recruiter retrieves all applications for a given job
 export const getApplicationsByJob = asyncHandler(async (req, res) => {
-  // Steps:
-  // 1. Extract jobId from req.params
-  // 2. Validate jobId format
-  // 3. Check if logged-in recruiter owns the job (authorization)
-  // 4. Query applications collection filtering by jobId
-  // 5. Populate user (candidate) details for better display
-  // 6. Paginate results if needed
-  // 7. Return list of applications
   const { jobId } = req.params;
   console.log("JobId param:", req.params);
 
@@ -164,16 +155,51 @@ export const getApplicationsByJob = asyncHandler(async (req, res) => {
   );
 });
 
-// Recruiter updates the status of a candidate’s application
 export const updateApplicationStatus = asyncHandler(async (req, res) => {
-  // Steps:
-  // 1. Extract applicationId from req.params
-  // 2. Extract new status from req.body
-  // 3. Validate status is one of allowed enum values
-  // 4. Find application by applicationId
-  // 5. Check if recruiter owns the related job (authorization)
-  // 6. Update status and updatedAt timestamp
-  // 7. Save and return updated application info
+  const { applicationId } = req.params;
+  const recruiterId = req.user._id;
+  const { status } = req.body;
+
+  if (!mongoose.Types.ObjectId.isValid(applicationId)) {
+    throw new ApiError(400, "Invalid Application ID format");
+  }
+
+  if (!status || !Object.values(APPLICATION_STATUS).includes(status)) {
+    throw new ApiError(
+      400,
+      `Invalid status value. Allowed values: ${Object.values(
+        APPLICATION_STATUS
+      ).join(", ")}`
+    );
+  }
+
+  const application = await Application.findById(applicationId);
+  if (!application) {
+    throw new ApiError(404, "Application not found");
+  }
+
+  const job = await Job.findById(application.jobId).select("recruiterId");
+  if (!job) {
+    throw new ApiError(404, "Job related to application not found");
+  }
+  if (job.recruiterId.toString() !== recruiterId.toString()) {
+    throw new ApiError(403, "Unauthorized to update this application");
+  }
+
+  application.status = status;
+  application.updatedAt = new Date();
+
+  await application.save();
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        { application },
+        "Application status updated successfully"
+      )
+    );
 });
 
 // Candidate withdraws an application

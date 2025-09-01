@@ -9,7 +9,6 @@ import jobRoutes from "./routes/job.route.js";
 import applicationRoutes from "./routes/application.route.js";
 
 dotenv.config();
-console.log("Env loaded, Cloudinary API Key:", process.env.CLOUDINARY_API_KEY);
 
 const app = express();
 app.use(express.json());
