@@ -7,7 +7,7 @@ const applicationSchema = new Schema(
       ref: "User",
       required: [true, "Candidate ID is required"],
     },
-    job: {
+    jobId: {
       type: Schema.Types.ObjectId,
       ref: "Job",
       required: [true, "Job ID is required"],
@@ -33,7 +33,6 @@ const applicationSchema = new Schema(
         "rejected",
         "withdrawn",
       ],
-      default: "applied",
       required: true,
     },
   },
