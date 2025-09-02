@@ -6,6 +6,7 @@ import {
   createOrUpdateProfile,
   deleteExperience,
   getCandidateProfile,
+  updateEducation,
   updateExperience,
 } from "../controllers/candidateProfile.controller.js";
 
@@ -25,5 +26,10 @@ candidateProfileRoutes.delete(
   deleteExperience
 );
 candidateProfileRoutes.post("/add-education", protect, addEducation);
+candidateProfileRoutes.put(
+  "/update-education/:educationId",
+  protect,
+  updateEducation
+);
 
 export default candidateProfileRoutes;
