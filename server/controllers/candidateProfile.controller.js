@@ -354,3 +354,28 @@ export const removeSkill = asyncHandler(async (req, res) => {
 
   res.json(new ApiResponse(200, profile.skills, "Skill removed successfully"));
 });
+
+export const uploadResume = asyncHandler(async (req, res) => {
+  const candidateId = req.user._id;
+  if (!candidateId || !mongoose.Types.ObjectId.isValid(candidateId)) {
+    throw new ApiError(400, "Invalid or missing candidate ID");
+  }
+  if (!req.file) {
+    throw new ApiError(400, "No resume file uploaded");
+  }
+  const resumeUrl = req.file.path;
+
+  const profile = await CandidateProfile.findOneAndUpdate(
+    { candidateId: candidateId.toString() },
+    { resumeUrl },
+    { new: true }
+  );
+
+  if (!profile) {
+    throw new ApiError(404, "Candidate profile not found");
+  }
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, { resumeUrl }, "Resume uploaded successfully"));
+});

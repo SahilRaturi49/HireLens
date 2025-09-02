@@ -1,5 +1,7 @@
 import express from "express";
 import { protect } from "../middlewares/auth.js";
+import upload from "../middlewares/upload.js";
+
 import {
   addEducation,
   addExperience,
@@ -11,12 +13,18 @@ import {
   removeSkill,
   updateEducation,
   updateExperience,
+  uploadResume,
 } from "../controllers/candidateProfile.controller.js";
 
 const candidateProfileRoutes = express.Router();
 
 candidateProfileRoutes.get("/get-profile", protect, getCandidateProfile);
-candidateProfileRoutes.post("/create-profile", protect, createOrUpdateProfile);
+candidateProfileRoutes.post(
+  "/create-profile",
+  protect,
+  upload.single("resume"),
+  createOrUpdateProfile
+);
 candidateProfileRoutes.post("/add-experience", protect, addExperience);
 candidateProfileRoutes.put(
   "/update-experience/:experienceId",
@@ -44,6 +52,12 @@ candidateProfileRoutes.delete(
   "/remove-skill/:candidateId",
   protect,
   removeSkill
+);
+candidateProfileRoutes.post(
+  "/upload-resume",
+  protect,
+  upload.single("resume"),
+  uploadResume
 );
 
 export default candidateProfileRoutes;
