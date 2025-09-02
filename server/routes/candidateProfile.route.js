@@ -9,6 +9,7 @@ import {
   createOrUpdateProfile,
   deleteEducation,
   deleteExperience,
+  deleteResume,
   getCandidateProfile,
   removeSkill,
   updateEducation,
@@ -59,5 +60,6 @@ candidateProfileRoutes.post(
   upload.single("resume"),
   uploadResume
 );
+candidateProfileRoutes.delete("/delete-resume", protect, deleteResume);
 
 export default candidateProfileRoutes;

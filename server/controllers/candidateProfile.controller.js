@@ -379,3 +379,39 @@ export const uploadResume = asyncHandler(async (req, res) => {
     .status(200)
     .json(new ApiResponse(200, { resumeUrl }, "Resume uploaded successfully"));
 });
+
+export const deleteResume = asyncHandler(async (req, res) => {
+  const candidateId = req.user && req.user._id;
+  if (!candidateId || !mongoose.Types.ObjectId.isValid(candidateId)) {
+    throw new ApiError(400, "Invalid or missing candidate ID");
+  }
+
+  const profile = await CandidateProfile.findOne({
+    candidateId: candidateId.toString(),
+  });
+  if (!profile) {
+    throw new ApiError(404, "Candidate profile not found");
+  }
+
+  const resumeUrl = profile.resumeUrl;
+  if (!resumeUrl) {
+    throw new ApiError(400, "No resume file found to delete");
+  }
+
+  const parts = resumeUrl.split("/");
+  const fileNameWithExt = parts[parts.length - 1];
+  const publicId = `resumes/${fileNameWithExt.split(".")[0]}`;
+
+  try {
+    await cloudinary.uploader.destroy(publicId, { resource_type: "raw" });
+  } catch (error) {
+    console.error("Cloudinary delete error:", error);
+  }
+
+  profile.resumeUrl = undefined;
+  await profile.save();
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, { profile }, "Resume deleted successfully"));
+});
