@@ -329,3 +329,28 @@ export const addSkills = asyncHandler(async (req, res) => {
 
   res.json(new ApiResponse(200, profile.skills, "Skills added successfully"));
 });
+
+export const removeSkill = asyncHandler(async (req, res) => {
+  const candidateId = req.user && req.user._id;
+  const { skill } = req.body;
+
+  if (!candidateId || !mongoose.Types.ObjectId.isValid(candidateId)) {
+    throw new ApiError(400, "Invalid or missing candidate ID");
+  }
+
+  if (!skill || typeof skill !== "string") {
+    throw new ApiError(400, "Skill is required and must be a string");
+  }
+
+  const profile = await CandidateProfile.findOneAndUpdate(
+    { candidateId: candidateId.toString() },
+    { $pull: { skills: skill } },
+    { new: true }
+  );
+
+  if (!profile) {
+    throw new ApiError(404, "Candidate profile not found");
+  }
+
+  res.json(new ApiResponse(200, profile.skills, "Skill removed successfully"));
+});

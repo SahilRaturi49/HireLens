@@ -8,6 +8,7 @@ import {
   deleteEducation,
   deleteExperience,
   getCandidateProfile,
+  removeSkill,
   updateEducation,
   updateExperience,
 } from "../controllers/candidateProfile.controller.js";
@@ -39,5 +40,10 @@ candidateProfileRoutes.delete(
   deleteEducation
 );
 candidateProfileRoutes.post("/add-skills", protect, addSkills);
+candidateProfileRoutes.delete(
+  "/remove-skill/:candidateId",
+  protect,
+  removeSkill
+);
 
 export default candidateProfileRoutes;
