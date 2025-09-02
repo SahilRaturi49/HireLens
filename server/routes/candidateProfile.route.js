@@ -4,6 +4,7 @@ import {
   addEducation,
   addExperience,
   createOrUpdateProfile,
+  deleteEducation,
   deleteExperience,
   getCandidateProfile,
   updateEducation,
@@ -30,6 +31,11 @@ candidateProfileRoutes.put(
   "/update-education/:educationId",
   protect,
   updateEducation
+);
+candidateProfileRoutes.delete(
+  "/delete-education/:educationId",
+  protect,
+  deleteEducation
 );
 
 export default candidateProfileRoutes;

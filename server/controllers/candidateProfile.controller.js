@@ -271,3 +271,36 @@ export const updateEducation = asyncHandler(async (req, res) => {
     .status(200)
     .json(new ApiResponse(200, { profile }, "Education updated successfully"));
 });
+
+export const deleteEducation = asyncHandler(async (req, res) => {
+  const candidateId = req.user._id;
+  const { educationId } = req.params;
+
+  if (!candidateId || !mongoose.Types.ObjectId.isValid(candidateId)) {
+    throw new ApiError(400, "Invalid or missing candidate ID");
+  }
+  if (!educationId || !mongoose.Types.ObjectId.isValid(educationId)) {
+    throw new ApiError(400, "Invalid or missing education ID");
+  }
+
+  const profile = await CandidateProfile.findOne({
+    candidateId: candidateId.toString(),
+  });
+  if (!profile) {
+    throw new ApiError(404, "Candidate profile not found");
+  }
+
+  const educationItem = profile.education.id(educationId);
+  if (!educationItem) {
+    throw new ApiError(404, "Education entry not found");
+  }
+
+  profile.education = profile.education.filter(
+    (edu) => edu._id.toString() !== educationId
+  );
+  await profile.save();
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, { profile }, "Education deleted successfully"));
+});
