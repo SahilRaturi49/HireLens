@@ -1,8 +1,10 @@
 import express from "express";
 import { protect } from "../middlewares/auth.js";
 import {
+  addEducation,
   addExperience,
   createOrUpdateProfile,
+  deleteExperience,
   getCandidateProfile,
   updateExperience,
 } from "../controllers/candidateProfile.controller.js";
@@ -17,5 +19,11 @@ candidateProfileRoutes.put(
   protect,
   updateExperience
 );
+candidateProfileRoutes.delete(
+  "/delete-experience/:experienceId",
+  protect,
+  deleteExperience
+);
+candidateProfileRoutes.post("/add-education", protect, addEducation);
 
 export default candidateProfileRoutes;

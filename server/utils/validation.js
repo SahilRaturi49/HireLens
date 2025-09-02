@@ -58,3 +58,11 @@ export const experienceSchema = Joi.object({
   endDate: Joi.date().optional().allow(null),
   description: Joi.string().max(1000).optional().allow("", null),
 });
+
+export const educationSchema = Joi.object({
+  institution: Joi.string().required(),
+  degree: Joi.string().required(),
+  fieldOfStudy: Joi.string().optional().allow(null, ""),
+  startDate: Joi.date().required(),
+  endDate: Joi.date().optional().allow(null),
+});

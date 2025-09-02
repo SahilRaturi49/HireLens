@@ -6,6 +6,7 @@ import mongoose from "mongoose";
 import {
   profileValidationSchema,
   experienceSchema,
+  educationSchema,
 } from "../utils/validation.js";
 
 export const getCandidateProfile = asyncHandler(async (req, res) => {
@@ -120,7 +121,6 @@ export const updateExperience = asyncHandler(async (req, res) => {
   if (!candidateId || !mongoose.Types.ObjectId.isValid(candidateId)) {
     throw new ApiError(400, "Invalid or missing candidate ID");
   }
-  console.log("CandidateID: ", candidateId);
   if (!experienceId || !mongoose.Types.ObjectId.isValid(experienceId)) {
     throw new ApiError(400, "Invalid or missing experience ID");
   }
@@ -150,7 +150,83 @@ export const updateExperience = asyncHandler(async (req, res) => {
 
   await profile.save();
 
-  res
+  return res
     .status(200)
     .json(new ApiResponse(200, { profile }, "Experience updated successfully"));
+});
+
+export const deleteExperience = asyncHandler(async (req, res) => {
+  const candidateId = req.user._id;
+  const { experienceId } = req.params;
+
+  if (!candidateId || !mongoose.Types.ObjectId.isValid(candidateId)) {
+    throw new ApiError(400, "Invalid or missing candidate ID");
+  }
+
+  if (!experienceId || !mongoose.Types.ObjectId.isValid(experienceId)) {
+    throw new ApiError(400, "Invalid or missing experience ID");
+  }
+
+  const profile = await CandidateProfile.findOne({
+    candidateId: candidateId.toString(),
+  });
+  if (!profile) {
+    throw new ApiError(404, "Candidate profile not found");
+  }
+
+  const experienceItem = profile.experience.id(experienceId);
+  if (!experienceItem) {
+    throw new ApiError(404, "Experience entry not found");
+  }
+
+  profile.experience = profile.experience.filter(
+    (exp) => exp._id.toString() !== experienceId
+  );
+  await profile.save();
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, { profile }, "Experience deleted successfully"));
+});
+
+export const educationUpdateSchema = educationSchema
+  .fork(Object.keys(educationSchema.describe().keys), (schema) =>
+    schema.optional()
+  )
+  .min(1);
+
+export const addEducation = asyncHandler(async (req, res) => {
+  const candidateId = req.user._id;
+  if (!candidateId || !mongoose.Types.ObjectId.isValid(candidateId)) {
+    throw new ApiError(400, "Invalid or missing candidate ID");
+  }
+
+  const { error, value } = educationSchema.validate(req.body, {
+    abortEarly: false,
+  });
+
+  if (error) {
+    const errorMessages = error.details.map((detail) => detail.message);
+    throw new ApiError(400, `Validation error: ${errorMessages.join("; ")}`);
+  }
+
+  let profile = await CandidateProfile.findOne({ candidateId });
+  if (!profile) {
+    profile = new CandidateProfile({ candidateId, education: [value] });
+  } else {
+    profile.education.push(value);
+  }
+  await profile.save();
+
+  return res
+    .status(profile.isNew ? 201 : 200)
+    .json(
+      new ApiResponse(
+        profile.isNew ? 201 : 200,
+        { profile },
+        profile.isNew
+          ? "Profile created successfully"
+          : "Education added successfully"
+      )
+    );
 });
