@@ -3,6 +3,7 @@ import { protect } from "../middlewares/auth.js";
 import {
   addEducation,
   addExperience,
+  addSkills,
   createOrUpdateProfile,
   deleteEducation,
   deleteExperience,
@@ -37,5 +38,6 @@ candidateProfileRoutes.delete(
   protect,
   deleteEducation
 );
+candidateProfileRoutes.post("/add-skills", protect, addSkills);
 
 export default candidateProfileRoutes;

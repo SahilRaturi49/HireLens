@@ -1,4 +1,5 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
+// import { User } from "../models/user.model.js";
 import { CandidateProfile } from "../models/candidateProfile.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
@@ -303,4 +304,28 @@ export const deleteEducation = asyncHandler(async (req, res) => {
   return res
     .status(200)
     .json(new ApiResponse(200, { profile }, "Education deleted successfully"));
+});
+
+export const addSkills = asyncHandler(async (req, res) => {
+  const candidateId = req.user._id;
+  const { skills } = req.body;
+
+  if (!candidateId || !mongoose.Types.ObjectId.isValid(candidateId)) {
+    throw new ApiError(400, "Invalid or missing candidate ID");
+  }
+
+  if (!Array.isArray(skills) || skills.length === 0) {
+    throw new ApiError(400, "Skills must be a non-empty array");
+  }
+
+  const profile = await CandidateProfile.findOneAndUpdate(
+    { candidateId: candidateId.toString() },
+    { $addToSet: { skills: { $each: skills } } },
+    { new: true }
+  );
+  if (!profile) {
+    throw new ApiError(404, "Candidate profile not found");
+  }
+
+  res.json(new ApiResponse(200, profile.skills, "Skills added successfully"));
 });
