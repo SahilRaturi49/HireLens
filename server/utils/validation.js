@@ -52,9 +52,9 @@ export const profileValidationSchema = Joi.object({
 });
 
 export const experienceSchema = Joi.object({
-  company: Joi.string().required(),
-  role: Joi.string().required(),
+  company: Joi.string().min(2).max(100).required(),
+  role: Joi.string().min(2).max(100).required(),
   startDate: Joi.date().required(),
-  endDate: Joi.date().optional(),
-  description: Joi.string().optional(),
+  endDate: Joi.date().optional().allow(null),
+  description: Joi.string().max(1000).optional().allow("", null),
 });
