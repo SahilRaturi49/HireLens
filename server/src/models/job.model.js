@@ -2,11 +2,11 @@ import mongoose, { Schema } from "mongoose";
 import slugify from "slugify";
 const jobSchema = new Schema(
   {
-    recruiterId: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
+    // recruiterId: {
+    //   type: Schema.Types.ObjectId,
+    //   ref: "User",
+    //   required: true,
+    // },
     companyName: {
       type: String,
       required: true,
@@ -63,6 +63,12 @@ const jobSchema = new Schema(
     isActive: {
       type: Boolean,
       default: true,
+    },
+    createdBy: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+      index: true,
     },
   },
   { timestamps: true }

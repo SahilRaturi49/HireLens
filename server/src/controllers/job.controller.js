@@ -15,15 +15,20 @@ export const createJob = asyncHandler(async (req, res) => {
     jobType,
     salaryMin,
     salaryMax,
-    isActive,
   } = req.body;
 
   if (!title || !companyName || !description) {
     throw new ApiError(400, "Title, Company Name, Description are required");
   }
 
+  if (salaryMin && salaryMax && salaryMax < salaryMin) {
+    throw new ApiError(
+      400,
+      "salaryMax must be greater than or equal to salaryMin"
+    );
+  }
+
   const job = await Job.create({
-    recruiterId: req.user._id,
     title,
     companyName,
     description,
@@ -33,7 +38,7 @@ export const createJob = asyncHandler(async (req, res) => {
     jobType,
     salaryMin,
     salaryMax,
-    isActive,
+    createdBy: req.user._id,
   });
 
   const jobUrl = `/jobs/${job.slug}`;
