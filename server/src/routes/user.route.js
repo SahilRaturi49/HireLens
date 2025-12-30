@@ -13,11 +13,11 @@ import { protect } from "../middlewares/auth.js";
 const userRoutes = express.Router();
 userRoutes.post("/register", registerUser);
 userRoutes.post("/login", loginUser);
-userRoutes.post("/update", refreshAccessToken);
+userRoutes.post("/refresh-Token", refreshAccessToken);
 
 userRoutes.post("/logout", protect, logoutUser);
 userRoutes.get("/me", protect, getCurrentUser);
 userRoutes.patch("/change-password", protect, changeCurrentPassword);
-userRoutes.post("/update", protect, updateAccountDetails);
+userRoutes.patch("/update", protect, updateAccountDetails);
 
 export default userRoutes;

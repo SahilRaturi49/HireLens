@@ -24,7 +24,6 @@ const userSchema = new Schema(
     role: {
       type: String,
       enum: ["recruiter", "candidate"],
-      required: true,
     },
     onboardingComplete: {
       type: Boolean,

@@ -28,7 +28,7 @@ export const registerUser = asyncHandler(async (req, res) => {
     throw new ApiError(400, error.details[0].message);
   }
 
-  const { name, email, password, role } = value;
+  const { name, email, password } = value;
 
   const existedUser = await User.findOne({ email });
   if (existedUser) {
@@ -39,7 +39,7 @@ export const registerUser = asyncHandler(async (req, res) => {
     name,
     email,
     password,
-    role,
+    role: "candidate",
   });
 
   const createdUser = await User.findById(user._id).select(
@@ -92,7 +92,7 @@ export const loginUser = asyncHandler(async (req, res) => {
     .json(
       new ApiResponse(
         200,
-        { user: loggedInUser },
+        { user: loggedInUser, accessToken },
         "User logged in successfully"
       )
     );
@@ -117,8 +117,7 @@ export const logoutUser = asyncHandler(async (req, res) => {
 });
 
 export const refreshAccessToken = asyncHandler(async (req, res) => {
-  const incomingRefreshToken =
-    req.cookies.refreshToken || req.body.refreshToken;
+  const incomingRefreshToken = req.cookies.refreshToken;
 
   if (!incomingRefreshToken) {
     throw new ApiError(401, "Unauthorized request");
@@ -182,6 +181,7 @@ export const changeCurrentPassword = asyncHandler(async (req, res) => {
   }
 
   user.password = newPassword;
+  user.refreshToken = undefined;
   await user.save();
 
   return res

@@ -53,6 +53,7 @@ export const createOrUpdateProfile = asyncHandler(async (req, res) => {
   }
 
   let profile = await CandidateProfile.findOne({ candidateId });
+  const isNewProfile = !profile;
 
   if (profile) {
     Object.assign(profile, value);
@@ -62,12 +63,12 @@ export const createOrUpdateProfile = asyncHandler(async (req, res) => {
 
   await profile.save();
   return res
-    .status(profile.isNew ? 201 : 200)
+    .status(isNewProfile ? 201 : 200)
     .json(
       new ApiResponse(
-        profile.isNew ? 201 : 200,
+        isNewProfile ? 201 : 200,
         { profile },
-        profile.isNew
+        isNewProfile
           ? "Candidate profile created successfully"
           : "Candidate profile updated successfully"
       )
@@ -90,10 +91,10 @@ export const addExperience = asyncHandler(async (req, res) => {
   }
   let profile = await CandidateProfile.findOne({ candidateId });
   if (!profile) {
-    profile = new CandidateProfile({ candidateId, experience: [value] });
-  } else {
-    profile.experience.push(value);
+    throw new ApiError(404, "Create profile first");
   }
+  profile.experience.push(value);
+
   await profile.save();
 
   return res

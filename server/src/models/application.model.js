@@ -17,9 +17,7 @@ const applicationSchema = new Schema(
       required: [true, "Resume is required"],
       trim: true,
       validate: {
-        validator: function (v) {
-          return /^(ftp|http|https):\/\/[^ "]+$/.test(v);
-        },
+        validator: (v) => /^(https?):\/\/.+/.test(v),
         message: (props) => `${props.value} is not a valid URL!`,
       },
     },
@@ -33,13 +31,12 @@ const applicationSchema = new Schema(
         "rejected",
         "withdrawn",
       ],
-      required: true,
+      default: "applied",
     },
   },
   { timestamps: { createdAt: "appliedAt", updatedAt: "updatedAt" } }
 );
 
-applicationSchema.index({ jobId: 1 });
-applicationSchema.index({ userId: 1 });
+applicationSchema.index({ jobId: 1, candidateId: 1 }, { unique: true });
 
 export const Application = mongoose.model("Application", applicationSchema);
