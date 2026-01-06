@@ -49,7 +49,7 @@ const educationSchema = new Schema({
 
 const candidateProfileSchema = new mongoose.Schema(
   {
-    userId: {
+    candidateId: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
       unique: true,

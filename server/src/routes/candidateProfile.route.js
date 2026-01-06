@@ -17,49 +17,23 @@ import {
   uploadResume,
 } from "../controllers/candidateProfile.controller.js";
 
-const candidateProfileRoutes = express.Router();
+const router = express.Router();
 
-candidateProfileRoutes.get("/get-profile", protect, getCandidateProfile);
-candidateProfileRoutes.post(
-  "/create-profile",
-  protect,
-  upload.single("resume"),
-  createOrUpdateProfile
-);
-candidateProfileRoutes.post("/add-experience", protect, addExperience);
-candidateProfileRoutes.put(
-  "/update-experience/:experienceId",
-  protect,
-  updateExperience
-);
-candidateProfileRoutes.delete(
-  "/delete-experience/:experienceId",
-  protect,
-  deleteExperience
-);
-candidateProfileRoutes.post("/add-education", protect, addEducation);
-candidateProfileRoutes.put(
-  "/update-education/:educationId",
-  protect,
-  updateEducation
-);
-candidateProfileRoutes.delete(
-  "/delete-education/:educationId",
-  protect,
-  deleteEducation
-);
-candidateProfileRoutes.post("/add-skills", protect, addSkills);
-candidateProfileRoutes.delete(
-  "/remove-skill/:candidateId",
-  protect,
-  removeSkill
-);
-candidateProfileRoutes.post(
-  "/upload-resume",
-  protect,
-  upload.single("resume"),
-  uploadResume
-);
-candidateProfileRoutes.delete("/delete-resume", protect, deleteResume);
+router.get("/", protect, getCandidateProfile);
+router.post("/", protect, createOrUpdateProfile);
 
-export default candidateProfileRoutes;
+router.post("/experience", protect, addExperience);
+router.put("/experience/:experienceId", protect, updateExperience);
+router.delete("/experience/:experienceId", protect, deleteExperience);
+
+router.post("/education", protect, addEducation);
+router.put("/education/:educationId", protect, updateEducation);
+router.delete("/education/:educationId", protect, deleteEducation);
+
+router.post("/skills", protect, addSkills);
+router.delete("/skills", protect, removeSkill);
+
+router.post("/resume", protect, upload.single("resume"), uploadResume);
+router.delete("/resume", protect, deleteResume);
+
+export default router;

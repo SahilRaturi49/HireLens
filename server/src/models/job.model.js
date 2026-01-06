@@ -2,11 +2,6 @@ import mongoose, { Schema } from "mongoose";
 import slugify from "slugify";
 const jobSchema = new Schema(
   {
-    // recruiterId: {
-    //   type: Schema.Types.ObjectId,
-    //   ref: "User",
-    //   required: true,
-    // },
     companyName: {
       type: String,
       required: true,
