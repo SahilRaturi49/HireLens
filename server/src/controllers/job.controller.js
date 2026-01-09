@@ -17,17 +17,19 @@ export const createJob = asyncHandler(async (req, res) => {
     salaryMax,
   } = req.body;
 
-  if (!title || !companyName || !description) {
-    throw new ApiError(400, "Title, Company Name, Description are required");
+  if (!title || !companyName || !description || !location) {
+    throw new ApiError(
+      400,
+      "Title, Company Name, Description, and Location are required"
+    );
   }
 
-  if (salaryMin && salaryMax && salaryMax < salaryMin) {
+  if (salaryMin != null && salaryMax != null && salaryMax < salaryMin) {
     throw new ApiError(
       400,
       "salaryMax must be greater than or equal to salaryMin"
     );
   }
-
   const job = await Job.create({
     title,
     companyName,
@@ -49,19 +51,14 @@ export const createJob = asyncHandler(async (req, res) => {
 });
 
 export const getJobs = asyncHandler(async (req, res) => {
-  const {
-    page = 1,
-    limit = 10,
-    title,
-    location,
-    jobType,
-    isActive,
-  } = req.query;
+  const { page = 1, limit = 10, title, location, jobType } = req.query;
 
-  const pageNum = parseInt(page, 10) || 1;
-  const limitNum = parseInt(limit, 10) || 10;
+  const pageNum = Math.max(parseInt(page, 10) || 1, 1);
+  const limitNum = Math.min(parseInt(limit, 10) || 10, 50);
   const skip = (pageNum - 1) * limitNum;
-  const query = {};
+  const query = {
+    isActive: true,
+  };
 
   if (title) {
     query.title = { $regex: title, $options: "i" };
@@ -72,26 +69,14 @@ export const getJobs = asyncHandler(async (req, res) => {
   }
 
   if (jobType) {
-    query.jobType = { $regex: jobType, $options: "i" };
+    query.jobType = jobType;
   }
 
-  if (isActive !== undefined) {
-    query.isActive = isActive === "true";
-  }
-  console.log("Built Query:", query);
+  const [jobs, total] = await Promise.all([
+    Job.find(query).skip(skip).limit(limitNum).sort({ createdAt: -1 }),
+    Job.countDocuments(query),
+  ]);
 
-  const jobs = await Job.find(query)
-    .skip(skip)
-    .limit(limitNum)
-    .sort({ createdAt: -1 });
-
-  const total = await Job.countDocuments(query);
-
-  if (jobs.length === 0) {
-    return res
-      .status(404)
-      .json(new ApiResponse(404, [], "No jobs found for the given filters"));
-  }
   return res.status(200).json(
     new ApiResponse(
       200,
@@ -101,20 +86,21 @@ export const getJobs = asyncHandler(async (req, res) => {
         totalPages: Math.ceil(total / limitNum),
         jobs,
       },
-      "Jobs fetched successfully"
+      jobs.length ? "Jobs fetched successfully" : "No jobs found"
     )
   );
 });
 
-export const getjobBySLug = asyncHandler(async (req, res) => {
+export const getJobBySLug = asyncHandler(async (req, res) => {
   const { slug } = req.params;
   if (!slug) {
     throw new ApiError(400, "Job slug is required");
   }
 
   const job = await Job.findOne({
-    slug: { $regex: new RegExp(`^${slug}$`, "i") },
-  }).populate("recruiterId", "name email");
+    slug,
+    isActive: true,
+  }).populate("createdBy", "name email");
 
   if (!job) {
     throw new ApiError(404, "job not found");
@@ -137,7 +123,7 @@ export const updateJob = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Job not found");
   }
 
-  if (job.recruiterId.toString() !== req.user._id.toString()) {
+  if (job.createdBy.toString() !== req.user._id.toString()) {
     throw new ApiError(403, "You are not authorized to update this job");
   }
 
@@ -180,7 +166,7 @@ export const deleteJob = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Job not found");
   }
 
-  if (job.recruiterId.toString() !== req.user._id.toString()) {
+  if (job.createdBy.toString() !== req.user._id.toString()) {
     throw new ApiError(403, "You are not authorized to delete this job");
   }
 
@@ -203,15 +189,13 @@ export const softDeleteJob = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Job not found");
   }
 
-  if (job.recruiterId.toString() !== req.user._id.toString()) {
+  if (job.createdBy.toString() !== req.user._id.toString()) {
     throw new ApiError(403, "You are not authorized to deactivate this job");
   }
 
   job.isActive = false;
   await job.save();
-  console.log("Before save:", job.isActive);
-  await job.save();
-  console.log("After save:", job.isActive);
+
   return res
     .status(200)
     .json(new ApiResponse(200, job, "Job deactivated successfully"));
@@ -229,7 +213,7 @@ export const activateJob = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Job not found");
   }
 
-  if (job.recruiterId.toString() !== req.user._id.toString()) {
+  if (job.createdBy.toString() !== req.user._id.toString()) {
     throw new ApiError(403, "You are not authorized to activate this job");
   }
 

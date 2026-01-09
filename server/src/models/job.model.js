@@ -11,7 +11,6 @@ const jobSchema = new Schema(
       type: String,
       required: true,
       trim: true,
-      index: true,
     },
     description: {
       type: String,
@@ -20,6 +19,10 @@ const jobSchema = new Schema(
     requirements: {
       type: [String],
       default: [],
+      validate: {
+        validator: (arr) => arr.every((i) => i.trim().length > 0),
+        message: "requirements cannot contain empty strings",
+      },
     },
     slug: {
       type: String,
@@ -30,16 +33,20 @@ const jobSchema = new Schema(
     responsibilities: {
       type: [String],
       default: [],
+      validate: {
+        validator: (arr) => arr.every((i) => i.trim().length > 0),
+        message: "responsibilities cannot contain empty strings",
+      },
     },
     location: {
       type: String,
+      required: true,
       trim: true,
-      index: true,
     },
     jobType: {
       type: String,
-      enum: ["Full-time", "Part-time", "Internship", "Contract"],
-      default: "Full-time",
+      enum: ["full-time", "part-time", "internship", "contract"],
+      default: "full-time",
     },
     salaryMin: {
       type: Number,
@@ -50,6 +57,7 @@ const jobSchema = new Schema(
       min: 0,
       validate: {
         validator: function (value) {
+          if (value == null || this.salaryMin == null) return true;
           return value >= this.salaryMin;
         },
         message: "salaryMax must be greater than or equal to salaryMin",
@@ -69,16 +77,21 @@ const jobSchema = new Schema(
   { timestamps: true }
 );
 
-jobSchema.pre("save", function (next) {
-  if (!this.slug) {
-    const titleSlug = slugify(this.title, { lower: true });
-    const companySlug = slugify(this.companyName, { lower: true });
+jobSchema.pre("validate", function (next) {
+  if (!this.slug && this.title && this.companyName) {
+    const titleSlug = slugify(this.title, { lower: true, strict: true });
+    const companySlug = slugify(this.companyName, {
+      lower: true,
+      strict: true,
+    });
     const locationSlug = this.location
-      ? slugify(this.location, { lower: true })
+      ? slugify(this.location, { lower: true, strict: true })
       : "remote";
     this.slug = `${titleSlug}-at-${companySlug}-in-${locationSlug}-${this._id}`;
   }
   next();
 });
+
+jobSchema.index({ title: 1, location: 1, isActive: 1 });
 
 export const Job = mongoose.model("Job", jobSchema);
