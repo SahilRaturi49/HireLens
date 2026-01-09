@@ -3,7 +3,7 @@ import {
   activateJob,
   createJob,
   deleteJob,
-  getjobBySLug,
+  getJobBySLug,
   getJobs,
   softDeleteJob,
   updateJob,
@@ -15,7 +15,7 @@ import { checkJobOwnership } from "../middlewares/ownership.middleware.js";
 const jobRoutes = express.Router();
 
 jobRoutes.get("/", getJobs);
-jobRoutes.get("/:slug", getjobBySLug);
+jobRoutes.get("/:slug", getJobBySLug);
 
 jobRoutes.post("/", protect, authorize("recruiter"), createJob);
 jobRoutes.patch(
@@ -25,7 +25,6 @@ jobRoutes.patch(
   checkJobOwnership,
   updateJob
 );
-jobRoutes.delete("/:jobId", protect, authorize("admin"), deleteJob);
 jobRoutes.patch(
   "/:jobId/activate",
   protect,
@@ -40,5 +39,7 @@ jobRoutes.patch(
   checkJobOwnership,
   softDeleteJob
 );
+
+jobRoutes.delete("/:jobId", protect, authorize("admin"), deleteJob);
 
 export default jobRoutes;

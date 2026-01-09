@@ -77,6 +77,10 @@ export const getJobs = asyncHandler(async (req, res) => {
     Job.countDocuments(query),
   ]);
 
+  console.log("QUERY:", query);
+  const allJobs = await Job.find({}).select("title isActive");
+  console.log("ALL JOB TITLES:", allJobs);
+
   return res.status(200).json(
     new ApiResponse(
       200,
