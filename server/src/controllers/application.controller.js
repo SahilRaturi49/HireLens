@@ -18,21 +18,22 @@ export const applyToJob = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Invalid Job ID");
   }
 
-  const jobExists = await Job.findById(jobId);
+  const jobExists = await Job.findOne({
+    _id: jobId,
+    isActive: true,
+  });
   if (!jobExists) {
-    throw new ApiError(404, "Job not found");
+    throw new ApiError(404, "Job not found or inactive");
+  }
+
+  if (!req.user.resumeUrl) {
+    throw new ApiError(400, "Please upload your resume in profile first");
   }
 
   const existingApplication = await Application.findOne({
     candidateId,
     jobId,
   });
-
-  if (!req.file || !req.file.path) {
-    throw new ApiError(400, "Resume file is required");
-  }
-
-  const resumeUrl = req.file.path;
 
   if (existingApplication) {
     throw new ApiError(409, "You have already applied to this job");
@@ -41,7 +42,6 @@ export const applyToJob = asyncHandler(async (req, res) => {
   const application = await Application.create({
     candidateId,
     jobId,
-    resumeUrl,
     status: APPLICATION_STATUS.APPLIED,
   });
 
@@ -54,39 +54,23 @@ export const applyToJob = asyncHandler(async (req, res) => {
 
 export const getMyApplications = asyncHandler(async (req, res) => {
   const candidateId = req.user._id;
-  if (!candidateId) {
-    return res.status(401).json(new ApiResponse(401, null, "Unauthorized"));
-  }
-  const page = parseInt(req.query.page) || 1;
-  const limit = parseInt(req.query.limit) || 10;
+
+  let page = Math.max(parseInt(req.query.page) || 1, 1);
+  let limit = Math.min(parseInt(req.query.limit) || 10, 20);
   const skip = (page - 1) * limit;
 
-  if (page < 1) page = 1;
-  if (limit < 1) limit = 10;
+  const [applications, totalApplications] = await Promise.all([
+    Application.find({ candidateId })
+      .populate({
+        path: "jobId",
+        select: "title companyName location jobType isActive slug",
+      })
+      .sort({ appliedAt: -1 })
+      .skip(skip)
+      .limit(limit),
 
-  const applications = await Application.find({ candidateId })
-    .populate("jobId")
-    .sort({ appliedAt: -1 })
-    .skip(skip)
-    .limit(limit);
-
-  const totalApplications = await Application.countDocuments({ candidateId });
-
-  if (!applications.length) {
-    return res.status(200).json(
-      new ApiResponse(
-        200,
-        {
-          results: [],
-          total: 0,
-          page,
-          limit,
-          totalPages: 0,
-        },
-        "No applications found"
-      )
-    );
-  }
+    Application.countDocuments({ candidateId }),
+  ]);
 
   return res.status(200).json(
     new ApiResponse(
@@ -98,45 +82,45 @@ export const getMyApplications = asyncHandler(async (req, res) => {
         limit,
         totalPages: Math.ceil(totalApplications / limit),
       },
-      "All applications fetched"
+      applications.length
+        ? "Applications fetched successfully"
+        : "No applications found"
     )
   );
 });
 
 export const getApplicationsByJob = asyncHandler(async (req, res) => {
   const { jobId } = req.params;
-  console.log("JobId param:", req.params);
 
   const recruiterId = req.user._id;
   if (!jobId || !mongoose.Types.ObjectId.isValid(jobId)) {
     throw new ApiError(400, "Invalid or missing job ID");
   }
 
-  const job = await Job.findById(jobId).select("recruiterId");
+  const job = await Job.findById(jobId).select("createdBy");
   if (!job) {
     throw new ApiError(404, "Job not found");
   }
 
-  if (job.recruiterId.toString() !== recruiterId.toString()) {
+  if (job.createdBy.toString() !== recruiterId.toString()) {
     throw new ApiError(403, "Unauthorized to access applications of this job");
   }
 
-  let page = parseInt(req.query.page) || 1;
-  let limit = parseInt(req.query.limit) || 10;
-  if (page < 1) page = 1;
-  if (limit < 1) limit = 10;
+  let page = Math.max(parseInt(req.query.page) || 1, 1);
+  let limit = Math.min(parseInt(req.query.limit) || 10, 20);
   const skip = (page - 1) * limit;
 
-  const applications = await Application.find({ jobId })
-    .populate({
-      path: "candidateId",
-      select: "name email phone",
-    })
-    .sort({ appliedAt: 1 })
-    .skip(skip)
-    .limit(limit);
-
-  const totalApplications = await Application.countDocuments({ jobId });
+  const [applications, totalApplications] = await Promise.all([
+    Application.find({ jobId })
+      .populate({
+        path: "candidateId",
+        select: "name email phone resumeUrl",
+      })
+      .sort({ appliedAt: -1 })
+      .skip(skip)
+      .limit(limit),
+    Application.countDocuments({ jobId }),
+  ]);
 
   return res.status(200).json(
     new ApiResponse(
@@ -150,7 +134,9 @@ export const getApplicationsByJob = asyncHandler(async (req, res) => {
         hasNextPage: page * limit < totalApplications,
         hasPreviousPage: page > 1,
       },
-      "Applications fetched successfully"
+      applications.length
+        ? "Applications fetched successfully"
+        : "No applications found"
     )
   );
 });
@@ -178,17 +164,16 @@ export const updateApplicationStatus = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Application not found");
   }
 
-  const job = await Job.findById(application.jobId).select("recruiterId");
+  const job = await Job.findById(application.jobId).select("createdBy");
   if (!job) {
     throw new ApiError(404, "Job related to application not found");
   }
-  if (job.recruiterId.toString() !== recruiterId.toString()) {
+  if (job.createdBy.toString() !== recruiterId.toString()) {
     throw new ApiError(403, "Unauthorized to update this application");
   }
 
   application.status = status;
-  application.updatedAt = new Date();
-
+  await application.save();
   await application.save();
 
   return res

@@ -25,6 +25,9 @@ const userSchema = new Schema(
       type: String,
       enum: ["recruiter", "candidate"],
     },
+    resumeUrl: {
+      type: String,
+    },
     onboardingComplete: {
       type: Boolean,
       default: false,

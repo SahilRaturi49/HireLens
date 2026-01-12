@@ -12,15 +12,6 @@ const applicationSchema = new Schema(
       ref: "Job",
       required: [true, "Job ID is required"],
     },
-    resumeUrl: {
-      type: String,
-      required: [true, "Resume is required"],
-      trim: true,
-      validate: {
-        validator: (v) => /^(https?):\/\/.+/.test(v),
-        message: (props) => `${props.value} is not a valid URL!`,
-      },
-    },
     status: {
       type: String,
       enum: [

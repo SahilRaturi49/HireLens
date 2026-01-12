@@ -317,6 +317,9 @@ export const uploadResume = asyncHandler(async (req, res) => {
   profile.resumeUrl = req.file.secure_url || req.file.path;
   await profile.save();
 
+  req.user.resumeUrl = profile.resumeUrl;
+  await req.user.save();
+
   return res
     .status(200)
     .json(
@@ -353,6 +356,9 @@ export const deleteResume = asyncHandler(async (req, res) => {
 
   profile.resumeUrl = undefined;
   await profile.save();
+
+  req.user.resumeUrl = undefined;
+  await req.user.save();
 
   return res
     .status(200)
