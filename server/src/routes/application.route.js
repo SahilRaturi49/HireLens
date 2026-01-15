@@ -1,6 +1,6 @@
 import express from "express";
-import upload from "../middlewares/upload.js";
 import { protect } from "../middlewares/auth.js";
+import { authorize } from "../middlewares/authorize.middleware.js";
 
 import {
   applyToJob,
@@ -12,16 +12,18 @@ import {
 
 const applicationRoutes = express.Router();
 
-applicationRoutes.post("/apply", protect, upload.single("resume"), applyToJob);
+applicationRoutes.post("/apply", protect, applyToJob);
 applicationRoutes.get("/my-applications", protect, getMyApplications);
 applicationRoutes.get(
   "/applications-by-job/:jobId",
   protect,
+  authorize("recruiter"),
   getApplicationsByJob
 );
 applicationRoutes.put(
   "/update-status/:applicationId",
   protect,
+  authorize("recruiter"),
   updateApplicationStatus
 );
 applicationRoutes.put(

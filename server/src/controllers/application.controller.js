@@ -174,7 +174,6 @@ export const updateApplicationStatus = asyncHandler(async (req, res) => {
 
   application.status = status;
   await application.save();
-  await application.save();
 
   return res
     .status(200)
@@ -207,17 +206,9 @@ export const withdrawApplication = asyncHandler(async (req, res) => {
     );
   }
 
-  application.status = "withdrawn";
-  application.updatedAt = new Date();
+  await Application.findByIdAndDelete(applicationId);
 
-  await application.save();
   res
     .status(200)
-    .json(
-      new ApiResponse(
-        200,
-        { application },
-        "Application withdrawn successfully"
-      )
-    );
+    .json(new ApiResponse(200, {}, "Application withdrawn successfully"));
 });
