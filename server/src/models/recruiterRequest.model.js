@@ -36,12 +36,25 @@ const recruiterRequestSchema = new Schema(
       enum: ["pending", "approved", "rejected"],
       default: "pending",
     },
+    reviewedBy: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
+    reviewedAt: {
+      type: Date,
+      default: null,
+    },
   },
   { timestamps: true }
 );
 
-recruiterRequestSchema.index({ userId: 1 }, { unique: true });
-recruiterRequestSchema.index({ status: 1 });
+recruiterRequestSchema.index({ userId: 1 });
+
+recruiterRequestSchema.index(
+  { userId: 1, status: 1 },
+  { unique: true, partialFilterExpression: { status: "pending" } }
+);
 
 export const RecruiterRequest = mongoose.model(
   "RecruiterRequest",
