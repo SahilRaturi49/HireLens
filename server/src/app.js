@@ -6,6 +6,7 @@ import userRoutes from "./routes/user.route.js";
 import jobRoutes from "./routes/job.route.js";
 import applicationRoutes from "./routes/application.route.js";
 import candidateProfileRoutes from "./routes/candidateProfile.route.js";
+import recruiterDashboardRoute from "./routes/recruiterDashboard.route.js";
 
 const app = express();
 
@@ -24,6 +25,7 @@ app.use("/api/v1/user", userRoutes);
 app.use("/api/v1/jobs", jobRoutes);
 app.use("/api/v1/application", applicationRoutes);
 app.use("/api/v1/candidate-profile", candidateProfileRoutes);
+app.use("/api/v1/recruiterDashboard", recruiterDashboardRoute);
 
 app.get("/", (req, res) => {
   res.send("HireLens backend up and running");

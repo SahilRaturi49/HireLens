@@ -4,13 +4,23 @@ import { ApiError } from "../utils/ApiError.js";
 
 export const protect = async (req, res, next) => {
   try {
+    // console.log("AUTH HEADER:", req.headers.authorization);
+    // console.log("COOKIE TOKEN:", req.cookies?.accessToken);
+
     const authHeader = req.headers.authorization;
 
+    // const token =
+    //   req.cookies?.accessToken ||
+    //   (authHeader && authHeader.startsWith("Bearer ")
+    //     ? authHeader.split(" ")[1]
+    //     : null);
     const token =
-      req.cookies?.accessToken ||
       (authHeader && authHeader.startsWith("Bearer ")
         ? authHeader.split(" ")[1]
-        : null);
+        : null) || req.cookies?.accessToken;
+
+    // console.log("FINAL TOKEN USED:", token);
+
     if (!token) {
       return next(new ApiError(401, "Not authorized, token missing"));
     }
