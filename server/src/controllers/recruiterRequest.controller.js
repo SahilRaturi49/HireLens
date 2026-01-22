@@ -9,7 +9,7 @@ export const createRecruiterRequest = asyncHandler(async (req, res) => {
   const { companyName, officialEmail, website, linkedIn, designation } =
     req.body;
 
-  if (!companyName || !officialEmail || designation) {
+  if (!companyName?.trim() || !officialEmail?.trim() || !designation?.trim()) {
     throw new ApiError(
       400,
       "Company Name, Official Email and Designation are required"
@@ -64,7 +64,7 @@ export const getPendingRecruiterRequests = asyncHandler(async (req, res) => {
 });
 
 export const approveRecruiterRequest = asyncHandler(async (req, res) => {
-  const request = await RecruiterRequest.findById(req.param.id);
+  const request = await RecruiterRequest.findById(req.params.id);
 
   if (!request) {
     throw new ApiError(404, "Recruiter request not found");

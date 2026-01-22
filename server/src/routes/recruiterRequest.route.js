@@ -14,13 +14,13 @@ const router = express.Router();
 router.post("/", protect, authorize("candidate"), createRecruiterRequest);
 router.get("/me", protect, getMyRecruiterRequest);
 router.get("/admin", protect, authorize("admin"), getPendingRecruiterRequests);
-router.get(
+router.patch(
   "/admin/:id/approve",
   protect,
   authorize("admin"),
   approveRecruiterRequest
 );
-router.get(
+router.patch(
   "/admin/:id/reject",
   protect,
   authorize("admin"),
