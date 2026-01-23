@@ -36,6 +36,12 @@ const userSchema = new Schema(
       type: String,
       select: false,
     },
+    savedJobs: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Job",
+      },
+    ],
   },
   { timestamps: true }
 );
