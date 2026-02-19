@@ -1,4 +1,4 @@
-<h1>HireLens — Job Portal Backend API</h1>
+# HireLens — Job Portal Backend API
 
 HireLens is a backend REST API for a job portal platform where users can register, browse job listings, and apply for jobs. Recruiters/admins can manage job postings with secure role-based access.
 
@@ -25,17 +25,23 @@ HireLens is a backend REST API for a job portal platform where users can registe
 ```bash
 git clone https://github.com/SahilRaturi49/hirelens-backend.git
 cd hirelens-backend
+```
 
 ### Install Dependencies
 
 ```bash
 npm install
-
+```
 ### Run the Server
 ```bash
 npm run dev
+```
+### Server Start
 
+After running the project, the server will start at:
 
-### Server will start at:
 ```bash
 http://localhost:5000
+```
+> **Note:** The server will run on the port specified in your `.env` file (if configured).
+
