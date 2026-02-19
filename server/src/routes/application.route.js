@@ -26,10 +26,5 @@ applicationRoutes.put(
   authorize("recruiter"),
   updateApplicationStatus
 );
-applicationRoutes.put(
-  "/withdraw-application/:applicationId",
-  protect,
-  withdrawApplication
-);
 
 export default applicationRoutes;

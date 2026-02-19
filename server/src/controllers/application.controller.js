@@ -26,22 +26,18 @@ export const applyToJob = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Job not found or inactive");
   }
 
-  if (!req.user.resumeUrl) {
-    throw new ApiError(400, "Please upload your resume in profile first");
+  if (jobExists.createdBy.toString() === candidateId.toString()) {
+    throw new ApiError(400, "Cannot apply to your own job");
   }
 
-  const existingApplication = await Application.findOne({
-    candidateId,
-    jobId,
-  });
-
-  if (existingApplication) {
-    throw new ApiError(409, "You have already applied to this job");
+  if (!req.user.resumeUrl) {
+    throw new ApiError(400, "Please upload your resume in profile first");
   }
 
   const application = await Application.create({
     candidateId,
     jobId,
+    recruiterId: jobExists.createdBy,
     status: APPLICATION_STATUS.APPLIED,
   });
 
@@ -63,6 +59,7 @@ export const getMyApplications = asyncHandler(async (req, res) => {
     Application.find({ candidateId })
       .populate({
         path: "jobId",
+        match: { isActive: true },
         select: "title companyName location jobType isActive slug",
       })
       .sort({ appliedAt: -1 })
@@ -184,31 +181,4 @@ export const updateApplicationStatus = asyncHandler(async (req, res) => {
         "Application status updated successfully"
       )
     );
-});
-
-export const withdrawApplication = asyncHandler(async (req, res) => {
-  const { applicationId } = req.params;
-  const candidateId = req.user._id;
-
-  if (!mongoose.Types.ObjectId.isValid(applicationId)) {
-    throw new ApiError(400, "Invalid Application ID format");
-  }
-
-  const application = await Application.findById(applicationId);
-  if (!application) {
-    throw new ApiError(404, "Application not found");
-  }
-
-  if (application.candidateId.toString() !== candidateId.toString()) {
-    throw new ApiError(
-      403,
-      "You are not authorized to withdraw this application"
-    );
-  }
-
-  await Application.findByIdAndDelete(applicationId);
-
-  res
-    .status(200)
-    .json(new ApiResponse(200, {}, "Application withdrawn successfully"));
 });

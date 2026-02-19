@@ -6,23 +6,25 @@ const applicationSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: "User",
       required: [true, "Candidate ID is required"],
+      index: true,
     },
     jobId: {
       type: Schema.Types.ObjectId,
       ref: "Job",
       required: [true, "Job ID is required"],
+      index: true,
+    },
+    recruiterId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+      index: true,
     },
     status: {
       type: String,
-      enum: [
-        "applied",
-        "shortlisted",
-        "interview",
-        "selected",
-        "rejected",
-        "withdrawn",
-      ],
+      enum: ["applied", "shortlisted", "interview", "selected", "rejected"],
       default: "applied",
+      index: true,
     },
   },
   { timestamps: { createdAt: "appliedAt", updatedAt: "updatedAt" } }
