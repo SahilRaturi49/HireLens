@@ -26,13 +26,12 @@ HireLens is a backend REST API for a job portal platform where users can registe
 git clone https://github.com/SahilRaturi49/hirelens-backend.git
 cd hirelens-backend
 
-Install Dependencies
+### Install Dependencies
 npm install
 
-Run the Server
+### Run the Server
 npm run dev
 
 
-Server will start at:
-
+### Server will start at:
 http://localhost:5000
