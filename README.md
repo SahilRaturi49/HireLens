@@ -27,11 +27,15 @@ git clone https://github.com/SahilRaturi49/hirelens-backend.git
 cd hirelens-backend
 
 ### Install Dependencies
+
+```bash
 npm install
 
 ### Run the Server
+```bash
 npm run dev
 
 
 ### Server will start at:
+```bash
 http://localhost:5000
