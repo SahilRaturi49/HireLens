@@ -9,3 +9,30 @@ HireLens is a backend REST API for a job portal platform where users can registe
 - ✅ Job Posting Management (CRUD)
 - ✅ Job Application System
 - ✅ Secure REST APIs with Validation & Centralized Error Handling
+
+## 🛠 Tech Stack
+
+- ⚡ Node.js  
+- 🚀 Express.js  
+- 🗄 MongoDB + Mongoose  
+- 🔐 JWT Authentication  
+- 🌐 REST API Architecture  
+
+## ⚙️ Project Setup
+
+### Clone the Repository
+
+```bash
+git clone https://github.com/SahilRaturi49/hirelens-backend.git
+cd hirelens-backend
+
+Install Dependencies
+npm install
+
+Run the Server
+npm run dev
+
+
+Server will start at:
+
+http://localhost:5000
